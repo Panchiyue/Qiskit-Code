@@ -1,0 +1,493 @@
+###This is the two qubit case O=([0,0,0,1],[0,0,1,0],[0,1,0,0],[1,0,0,0])
+import numpy as np
+from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister
+from qiskit import BasicAer, execute,Aer
+from qutip import *
+from qiskit import IBMQ
+IBMQ.load_account() 
+IBMQ.providers()    
+from qiskit.quantum_info.operators import Operator
+
+
+  
+
+E=Operator([[np.cos(1),0,0,-1j*np.sin(1)],
+            [0,np.cos(1),-1j*np.sin(1),0],
+            [0,-1j*np.sin(1),np.cos(1),0],
+            [-1j*np.sin(1),0,0,np.cos(1)]])
+
+
+r=0.9               
+p=1/r    
+
+N=100000               
+NI=1       
+
+P0=np.zeros([NI,1])
+P1=np.zeros([NI,1])
+P2=np.zeros([NI,1])
+P3=np.zeros([NI,1])
+
+t0=np.zeros([NI,1])
+t1=np.zeros([NI,1])
+t2=np.zeros([NI,1])
+t=np.zeros([NI,1])
+
+a1=np.zeros(([NI,N+1]),dtype='complex128')
+a2=np.zeros(([NI,N+1]),dtype='complex128')
+a3=np.zeros(([NI,N+1]),dtype='complex128')
+a4=np.zeros(([NI,N+1]),dtype='complex128')
+a5=np.zeros(([NI,N+1]),dtype='complex128')
+a6=np.zeros(([NI,N+1]),dtype='complex128')
+a7=np.zeros(([NI,N+1]),dtype='complex128')
+a8=np.zeros(([NI,N+1]),dtype='complex128')
+a9=np.zeros(([NI,N+1]),dtype='complex128')
+a10=np.zeros(([NI,N+1]),dtype='complex128')
+a11=np.zeros(([NI,N+1]),dtype='complex128')
+a12=np.zeros(([NI,N+1]),dtype='complex128')
+a13=np.zeros(([NI,N+1]),dtype='complex128')
+a14=np.zeros(([NI,N+1]),dtype='complex128')
+a15=np.zeros(([NI,N+1]),dtype='complex128')
+a16=np.zeros(([NI,N+1]),dtype='complex128')
+
+f0=np.zeros([NI,1])
+f1=np.zeros([NI,1])
+f2=np.zeros([NI,1])
+f3=np.zeros([NI,1])
+
+
+for ni in range(NI):
+    
+    w0=1
+    w1=1
+    w2=1
+    
+    
+    a1[ni,0]=1
+    a2[ni,0]=0
+    a3[ni,0]=0
+    a4[ni,0]=0
+    a5[ni,0]=0
+    a6[ni,0]=1
+    a7[ni,0]=0
+    a8[ni,0]=0
+    a9[ni,0]=0
+    a10[ni,0]=0
+    a11[ni,0]=1
+    a12[ni,0]=0
+    a13[ni,0]=0
+    a14[ni,0]=0
+    a15[ni,0]=0
+    a16[ni,0]=1
+    
+    for n0 in range(N):        
+        qr=QuantumRegister(2)
+        cr=ClassicalRegister(2)
+        qc=QuantumCircuit(qr,cr)
+        
+        D=Operator([[a1[ni,n0],a5[ni,n0],a9[ni,n0],a13[ni,n0]],
+                    [a2[ni,n0],a6[ni,n0],a10[ni,n0],a14[ni,n0]],
+                    [a3[ni,n0],a7[ni,n0],a11[ni,n0],a15[ni,n0]],
+                    [a4[ni,n0],a8[ni,n0],a12[ni,n0],a16[ni,n0]]])
+        
+        Ddag=Operator([[a1[ni,n0].conjugate(),a2[ni,n0].conjugate(),a3[ni,n0].conjugate(),a4[ni,n0].conjugate()],
+                    [a5[ni,n0].conjugate(),a6[ni,n0].conjugate(),a7[ni,n0].conjugate(),a8[ni,n0].conjugate()],
+                    [a9[ni,n0].conjugate(),a10[ni,n0].conjugate(),a11[ni,n0].conjugate(),a12[ni,n0].conjugate()],
+                    [a13[ni,n0].conjugate(),a14[ni,n0].conjugate(),a15[ni,n0].conjugate(),a16[ni,n0].conjugate()]])
+
+        
+       
+        qc.unitary(D, [0, 1])
+        
+        
+        qc.unitary(E, [0, 1])
+
+       
+        
+        qc.unitary(Ddag, [0, 1])
+        
+        
+        qc.measure([0,1],[0,1])
+        provider = IBMQ.get_provider(hub='ibm-q')
+        backend = provider.get_backend('ibmq_ourense')
+        job=execute(qc,backend,shots=1)
+        result = job.result()
+        counts=result.get_counts()
+        
+        angx=2*np.pi*w0*(np.random.random()-0.5)
+        angy=2*np.pi*w0*(np.random.random()-0.5)
+        angz=2*np.pi*w0*(np.random.random()-0.5)
+        
+        b1=np.exp(-1j*angz/2)*np.cos(angy/2)*np.cos(angx/2)+1j*np.exp(1j*angz/2)*np.sin(angy/2)*np.sin(angx/2)
+        b2=np.exp(-1j*angz/2)*np.sin(angy/2)*np.cos(angx/2)-1j*np.exp(1j*angz/2)*np.cos(angy/2)*np.sin(angx/2)
+        b3=-np.exp(1j*angz/2)*np.sin(angy/2)*np.cos(angx/2)-1j*np.exp(-1j*angz/2)*np.cos(angy/2)*np.sin(angx/2)
+        b4=np.exp(1j*angz/2)*np.cos(angy/2)*np.cos(angx/2)-1j*np.exp(-1j*angz/2)*np.sin(angy/2)*np.sin(angx/2)
+        
+        if counts=={'00':1}:
+            m=0
+            a1[ni,n0+1]=a1[ni,n0]
+            a2[ni,n0+1]=a2[ni,n0]
+            a3[ni,n0+1]=a3[ni,n0]
+            a4[ni,n0+1]=a4[ni,n0]
+            a5[ni,n0+1]=a5[ni,n0]
+            a6[ni,n0+1]=a6[ni,n0]
+            a7[ni,n0+1]=a7[ni,n0]
+            a8[ni,n0+1]=a8[ni,n0]
+            a9[ni,n0+1]=a9[ni,n0]
+            a10[ni,n0+1]=a10[ni,n0]
+            a11[ni,n0+1]=a11[ni,n0]
+            a12[ni,n0+1]=a12[ni,n0]
+            a13[ni,n0+1]=a13[ni,n0]
+            a14[ni,n0+1]=a14[ni,n0]
+            a15[ni,n0+1]=a15[ni,n0]
+            a16[ni,n0+1]=a16[ni,n0]
+            w0=w0*r
+        if counts=={'10':1}:
+            m=2
+            a1[ni,n0+1]=a1[ni,n0]*b1+a9[ni,n0]*b2
+            a2[ni,n0+1]=a2[ni,n0]*b1+a10[ni,n0]*b2
+            a3[ni,n0+1]=a3[ni,n0]*b1+a11[ni,n0]*b2
+            a4[ni,n0+1]=a4[ni,n0]*b1+a12[ni,n0]*b2
+            a5[ni,n0+1]=a5[ni,n0]
+            a6[ni,n0+1]=a6[ni,n0]
+            a7[ni,n0+1]=a7[ni,n0]
+            a8[ni,n0+1]=a8[ni,n0]
+            a9[ni,n0+1]=a1[ni,n0]*b3+a9[ni,n0]*b4
+            a10[ni,n0+1]=a2[ni,n0]*b3+a10[ni,n0]*b4
+            a11[ni,n0+1]=a3[ni,n0]*b3+a11[ni,n0]*b4
+            a12[ni,n0+1]=a4[ni,n0]*b3+a12[ni,n0]*b4
+            a13[ni,n0+1]=a13[ni,n0]
+            a14[ni,n0+1]=a14[ni,n0]
+            a15[ni,n0+1]=a15[ni,n0]
+            a16[ni,n0+1]=a16[ni,n0]
+            w0=w0*p
+        if counts=={'01':1}:
+            m=1
+            a1[ni,n0+1]=a1[ni,n0]*b1+a5[ni,n0]*b2
+            a2[ni,n0+1]=a2[ni,n0]*b1+a6[ni,n0]*b2
+            a3[ni,n0+1]=a3[ni,n0]*b1+a7[ni,n0]*b2
+            a4[ni,n0+1]=a4[ni,n0]*b1+a8[ni,n0]*b2
+            a5[ni,n0+1]=a1[ni,n0]*b3+a5[ni,n0]*b4
+            a6[ni,n0+1]=a2[ni,n0]*b3+a6[ni,n0]*b4
+            a7[ni,n0+1]=a3[ni,n0]*b3+a7[ni,n0]*b4
+            a8[ni,n0+1]=a4[ni,n0]*b3+a8[ni,n0]*b4
+            a9[ni,n0+1]=a9[ni,n0]
+            a10[ni,n0+1]=a10[ni,n0]
+            a11[ni,n0+1]=a11[ni,n0]
+            a12[ni,n0+1]=a12[ni,n0]
+            a13[ni,n0+1]=a13[ni,n0]
+            a14[ni,n0+1]=a14[ni,n0]
+            a15[ni,n0+1]=a15[ni,n0]
+            a16[ni,n0+1]=a16[ni,n0]
+            w0=w0*p
+        if counts=={'11':1}:
+            m=3
+            a1[ni,n0+1]=a1[ni,n0]*b1+a13[ni,n0]*b2
+            a2[ni,n0+1]=a2[ni,n0]*b1+a14[ni,n0]*b2
+            a3[ni,n0+1]=a3[ni,n0]*b1+a15[ni,n0]*b2
+            a4[ni,n0+1]=a4[ni,n0]*b1+a16[ni,n0]*b2
+            a5[ni,n0+1]=a5[ni,n0]
+            a6[ni,n0+1]=a6[ni,n0]
+            a7[ni,n0+1]=a7[ni,n0]
+            a8[ni,n0+1]=a8[ni,n0]
+            a9[ni,n0+1]=a9[ni,n0]
+            a10[ni,n0+1]=a10[ni,n0]
+            a11[ni,n0+1]=a11[ni,n0]
+            a12[ni,n0+1]=a12[ni,n0]
+            a13[ni,n0+1]=a1[ni,n0]*b3+a13[ni,n0]*b4
+            a14[ni,n0+1]=a2[ni,n0]*b3+a14[ni,n0]*b4
+            a15[ni,n0+1]=a3[ni,n0]*b3+a15[ni,n0]*b4
+            a16[ni,n0+1]=a4[ni,n0]*b3+a16[ni,n0]*b4
+            w0=w0*p
+        if w0>1:
+            w0=1
+        if w0<0.1:
+            break
+        t0[ni,0]=n0
+            
+        print(n0,w0,m,ni)   
+        
+    for n1 in range(n0,N):
+        qr=QuantumRegister(2)
+        cr=ClassicalRegister(2)
+        qc=QuantumCircuit(qr,cr)
+        qc.x(qr[0])
+        D=Operator([[a1[ni,n1],a5[ni,n1],a9[ni,n1],a13[ni,n1]],
+                [a2[ni,n1],a6[ni,n1],a10[ni,n1],a14[ni,n1]],
+                [a3[ni,n1],a7[ni,n1],a11[ni,n1],a15[ni,n1]],
+                [a4[ni,n1],a8[ni,n1],a12[ni,n1],a16[ni,n1]]])
+        
+        Ddag=Operator([[a1[ni,n1].conjugate(),a2[ni,n1].conjugate(),a3[ni,n1].conjugate(),a4[ni,n1].conjugate()],
+                [a5[ni,n1].conjugate(),a6[ni,n1].conjugate(),a7[ni,n1].conjugate(),a8[ni,n1].conjugate()],
+                [a9[ni,n1].conjugate(),a10[ni,n1].conjugate(),a11[ni,n1].conjugate(),a12[ni,n1].conjugate()],
+                [a13[ni,n1].conjugate(),a14[ni,n1].conjugate(),a15[ni,n1].conjugate(),a16[ni,n1].conjugate()]])
+        ##D matri
+        qc.unitary(D, [0, 1])
+        
+        ##environment
+        qc.unitary(E, [0, 1])
+
+       
+        ##D dagger
+        qc.unitary(Ddag, [0, 1])
+        
+        
+        qc.measure([0,1],[0,1])
+        provider = IBMQ.get_provider(hub='ibm-q')
+        backend = provider.get_backend('ibmq_ourense')
+        job=execute(qc,backend,shots=1)
+        result = job.result()
+        counts=result.get_counts()
+        
+        angx=2*np.pi*w1*(np.random.random()-0.5)
+        angy=2*np.pi*w1*(np.random.random()-0.5)
+        angz=2*np.pi*w1*(np.random.random()-0.5)
+        
+        b1=np.exp(-1j*angz/2)*np.cos(angy/2)*np.cos(angx/2)+1j*np.exp(1j*angz/2)*np.sin(angy/2)*np.sin(angx/2)
+        b2=np.exp(-1j*angz/2)*np.sin(angy/2)*np.cos(angx/2)-1j*np.exp(1j*angz/2)*np.cos(angy/2)*np.sin(angx/2)
+        b3=-np.exp(1j*angz/2)*np.sin(angy/2)*np.cos(angx/2)-1j*np.exp(-1j*angz/2)*np.cos(angy/2)*np.sin(angx/2)
+        b4=np.exp(1j*angz/2)*np.cos(angy/2)*np.cos(angx/2)-1j*np.exp(-1j*angz/2)*np.sin(angy/2)*np.sin(angx/2)
+            
+        if counts=={'00':1}:
+            m=0
+            w1=w1
+            a1[ni,n1+1]=a1[ni,n1]
+            a2[ni,n1+1]=a2[ni,n1]
+            a3[ni,n1+1]=a3[ni,n1]
+            a4[ni,n1+1]=a4[ni,n1]
+            a5[ni,n1+1]=a5[ni,n1]
+            a6[ni,n1+1]=a6[ni,n1]
+            a7[ni,n1+1]=a7[ni,n1]
+            a8[ni,n1+1]=a8[ni,n1]
+            a9[ni,n1+1]=a9[ni,n1]
+            a10[ni,n1+1]=a10[ni,n1]
+            a11[ni,n1+1]=a11[ni,n1]
+            a12[ni,n1+1]=a12[ni,n1]
+            a13[ni,n1+1]=a13[ni,n1]
+            a14[ni,n1+1]=a14[ni,n1]
+            a15[ni,n1+1]=a15[ni,n1]
+            a16[ni,n1+1]=a16[ni,n1]
+        if counts=={'10':1}:
+            m=2
+            w1=w1*p
+            a1[ni,n1+1]=a1[ni,n1]
+            a2[ni,n1+1]=a2[ni,n1]
+            a3[ni,n1+1]=a3[ni,n1]
+            a4[ni,n1+1]=a4[ni,n1]
+            a5[ni,n1+1]=a5[ni,n1]*b1+a9[ni,n1]*b2
+            a6[ni,n1+1]=a6[ni,n1]*b1+a10[ni,n1]*b2
+            a7[ni,n1+1]=a7[ni,n1]*b1+a11[ni,n1]*b2
+            a8[ni,n1+1]=a8[ni,n1]*b1+a12[ni,n1]*b2
+            a9[ni,n1+1]=a5[ni,n1]*b3+a9[ni,n1]*b4
+            a10[ni,n1+1]=a6[ni,n1]*b3+a10[ni,n1]*b4
+            a11[ni,n1+1]=a7[ni,n1]*b3+a11[ni,n1]*b4
+            a12[ni,n1+1]=a8[ni,n1]*b3+a12[ni,n1]*b4
+            a13[ni,n1+1]=a13[ni,n1]
+            a14[ni,n1+1]=a14[ni,n1]
+            a15[ni,n1+1]=a15[ni,n1]
+            a16[ni,n1+1]=a16[ni,n1]
+        if counts=={'01':1}:
+            m=1
+            w1=w1*r
+            a1[ni,n1+1]=a1[ni,n1]
+            a2[ni,n1+1]=a2[ni,n1]
+            a3[ni,n1+1]=a3[ni,n1]
+            a4[ni,n1+1]=a4[ni,n1]
+            a5[ni,n1+1]=a5[ni,n1]
+            a6[ni,n1+1]=a6[ni,n1]
+            a7[ni,n1+1]=a7[ni,n1]
+            a8[ni,n1+1]=a8[ni,n1]
+            a9[ni,n1+1]=a9[ni,n1]
+            a10[ni,n1+1]=a10[ni,n1]
+            a11[ni,n1+1]=a11[ni,n1]
+            a12[ni,n1+1]=a12[ni,n1]
+            a13[ni,n1+1]=a13[ni,n1]
+            a14[ni,n1+1]=a14[ni,n1]
+            a15[ni,n1+1]=a15[ni,n1]
+            a16[ni,n1+1]=a16[ni,n1]
+        if counts=={'11':1}:
+            m=3
+            w1=w1*p
+            a1[ni,n1+1]=a1[ni,n1]
+            a2[ni,n1+1]=a2[ni,n1]
+            a3[ni,n1+1]=a3[ni,n1]
+            a4[ni,n1+1]=a4[ni,n1]
+            a5[ni,n1+1]=a5[ni,n1]*b1+a13[ni,n1]*b2
+            a6[ni,n1+1]=a6[ni,n1]*b1+a14[ni,n1]*b2
+            a7[ni,n1+1]=a7[ni,n1]*b1+a15[ni,n1]*b2
+            a8[ni,n1+1]=a8[ni,n1]*b1+a16[ni,n1]*b2
+            a9[ni,n1+1]=a9[ni,n1]
+            a10[ni,n1+1]=a10[ni,n1]
+            a11[ni,n1+1]=a11[ni,n1]
+            a12[ni,n1+1]=a12[ni,n1]
+            a13[ni,n1+1]=a5[ni,n1]*b3+a13[ni,n1]*b4
+            a14[ni,n1+1]=a6[ni,n1]*b3+a14[ni,n1]*b4
+            a15[ni,n1+1]=a7[ni,n1]*b3+a15[ni,n1]*b4
+            a16[ni,n1+1]=a8[ni,n1]*b3+a16[ni,n1]*b4
+        if w1>1:
+            w1=1
+        if w1<0.1:
+            break
+        t1[ni,0]=n1-n0
+        
+        print(n1,w1,m,ni) 
+    for n2 in range(n1,N):
+        qr=QuantumRegister(2)
+        cr=ClassicalRegister(2)
+        qc=QuantumCircuit(qr,cr)
+        qc.x(qr[1])
+        D=Operator([[a1[ni,n2],a5[ni,n2],a9[ni,n2],a13[ni,n2]],
+                [a2[ni,n2],a6[ni,n2],a10[ni,n2],a14[ni,n2]],
+                [a3[ni,n2],a7[ni,n2],a11[ni,n2],a15[ni,n2]],
+                [a4[ni,n2],a8[ni,n2],a12[ni,n2],a16[ni,n2]]])
+        
+        Ddag=Operator([[a1[ni,n2].conjugate(),a2[ni,n2].conjugate(),a3[ni,n2].conjugate(),a4[ni,n2].conjugate()],
+                [a5[ni,n2].conjugate(),a6[ni,n2].conjugate(),a7[ni,n2].conjugate(),a8[ni,n2].conjugate()],
+                [a9[ni,n2].conjugate(),a10[ni,n2].conjugate(),a11[ni,n2].conjugate(),a12[ni,n2].conjugate()],
+                [a13[ni,n2].conjugate(),a14[ni,n2].conjugate(),a15[ni,n2].conjugate(),a16[ni,n2].conjugate()]])
+        
+        ##D matri
+        qc.unitary(D, [0, 1])
+        
+        ##environment
+        qc.unitary(E, [0, 1])
+
+       
+        ##D dagger
+        qc.unitary(Ddag, [0, 1])
+        
+        
+        qc.measure([0,1],[0,1])
+        provider = IBMQ.get_provider(hub='ibm-q')
+        backend = provider.get_backend('ibmq_ourense')
+        job=execute(qc,backend,shots=1)
+        result = job.result()
+        counts=result.get_counts()
+        
+        angx=2*np.pi*w2*(np.random.random()-0.5)
+        angy=2*np.pi*w2*(np.random.random()-0.5)
+        angz=2*np.pi*w2*(np.random.random()-0.5)
+        
+        b1=np.exp(-1j*angz/2)*np.cos(angy/2)*np.cos(angx/2)+1j*np.exp(1j*angz/2)*np.sin(angy/2)*np.sin(angx/2)
+        b2=np.exp(-1j*angz/2)*np.sin(angy/2)*np.cos(angx/2)-1j*np.exp(1j*angz/2)*np.cos(angy/2)*np.sin(angx/2)
+        b3=-np.exp(1j*angz/2)*np.sin(angy/2)*np.cos(angx/2)-1j*np.exp(-1j*angz/2)*np.cos(angy/2)*np.sin(angx/2)
+        b4=np.exp(1j*angz/2)*np.cos(angy/2)*np.cos(angx/2)-1j*np.exp(-1j*angz/2)*np.sin(angy/2)*np.sin(angx/2)
+        
+        if counts=={'00':1}:
+            m=0
+            w2=w2
+            a1[ni,n2+1]=a1[ni,n2]
+            a2[ni,n2+1]=a2[ni,n2]
+            a3[ni,n2+1]=a3[ni,n2]
+            a4[ni,n2+1]=a4[ni,n2]
+            a5[ni,n2+1]=a5[ni,n2]
+            a6[ni,n2+1]=a6[ni,n2]
+            a7[ni,n2+1]=a7[ni,n2]
+            a8[ni,n2+1]=a8[ni,n2]
+            a9[ni,n2+1]=a9[ni,n2]
+            a10[ni,n2+1]=a10[ni,n2]
+            a11[ni,n2+1]=a11[ni,n2]
+            a12[ni,n2+1]=a12[ni,n2]
+            a13[ni,n2+1]=a13[ni,n2]
+            a14[ni,n2+1]=a14[ni,n2]
+            a15[ni,n2+1]=a15[ni,n2]
+            a16[ni,n2+1]=a16[ni,n2]
+        if counts=={'10':1}:
+            m=2
+            w2=w2*r
+            a1[ni,n2+1]=a1[ni,n2]
+            a2[ni,n2+1]=a2[ni,n2]
+            a3[ni,n2+1]=a3[ni,n2]
+            a4[ni,n2+1]=a4[ni,n2]
+            a5[ni,n2+1]=a5[ni,n2]
+            a6[ni,n2+1]=a6[ni,n2]
+            a7[ni,n2+1]=a7[ni,n2]
+            a8[ni,n2+1]=a8[ni,n2]
+            a9[ni,n2+1]=a9[ni,n2]
+            a10[ni,n2+1]=a10[ni,n2]
+            a11[ni,n2+1]=a11[ni,n2]
+            a12[ni,n2+1]=a12[ni,n2]
+            a13[ni,n2+1]=a13[ni,n2]
+            a14[ni,n2+1]=a14[ni,n2]
+            a15[ni,n2+1]=a15[ni,n2]
+            a16[ni,n2+1]=a16[ni,n2]
+        if counts=={'01':1}:
+            m=1
+            w2=w2
+            a1[ni,n2+1]=a1[ni,n2]
+            a2[ni,n2+1]=a2[ni,n2]
+            a3[ni,n2+1]=a3[ni,n2]
+            a4[ni,n2+1]=a4[ni,n2]
+            a5[ni,n2+1]=a5[ni,n2]
+            a6[ni,n2+1]=a6[ni,n2]
+            a7[ni,n2+1]=a7[ni,n2]
+            a8[ni,n2+1]=a8[ni,n2]
+            a9[ni,n2+1]=a9[ni,n2]
+            a10[ni,n2+1]=a10[ni,n2]
+            a11[ni,n2+1]=a11[ni,n2]
+            a12[ni,n2+1]=a12[ni,n2]
+            a13[ni,n2+1]=a13[ni,n2]
+            a14[ni,n2+1]=a14[ni,n2]
+            a15[ni,n2+1]=a15[ni,n2]
+            a16[ni,n2+1]=a16[ni,n2]
+        if counts=={'11':1}:
+            m=3
+            w2=w2*p
+            a1[ni,n2+1]=a1[ni,n2]
+            a2[ni,n2+1]=a2[ni,n2]
+            a3[ni,n2+1]=a3[ni,n2]
+            a4[ni,n2+1]=a4[ni,n2]
+            a5[ni,n2+1]=a5[ni,n2]
+            a6[ni,n2+1]=a6[ni,n2]
+            a7[ni,n2+1]=a7[ni,n2]
+            a8[ni,n2+1]=a8[ni,n2]
+            a9[ni,n2+1]=a9[ni,n2]*b1+a13[ni,n2]*b2
+            a10[ni,n2+1]=a10[ni,n2]*b1+a14[ni,n2]*b2
+            a11[ni,n2+1]=a11[ni,n2]*b1+a15[ni,n2]*b2
+            a12[ni,n2+1]=a12[ni,n2]*b1+a16[ni,n2]*b2
+            a13[ni,n2+1]=a9[ni,n2]*b3+a13[ni,n2]*b4
+            a14[ni,n2+1]=a10[ni,n2]*b3+a14[ni,n2]*b4
+            a15[ni,n2+1]=a11[ni,n2]*b3+a15[ni,n2]*b4
+            a16[ni,n2+1]=a12[ni,n2]*b3+a16[ni,n2]*b4
+        
+        if w2>1:
+            w2=1
+        if w2<0.1:
+            break
+        t2[ni,0]=n2-n1  
+        
+        t[ni,0]=n2
+            
+        print(n2,m,w2,ni)
+
+    
+    E=np.array([[np.cos(1),0,0,-1j*np.sin(1)],
+            [0,np.cos(1),-1j*np.sin(1),0],
+            [0,-1j*np.sin(1),np.cos(1),0],
+            [-1j*np.sin(1),0,0,np.cos(1)]])
+    E=Qobj(E)
+    e,v=E.eigenstates()
+    
+    D=np.array([[a1[ni,n2+1],a5[ni,n2+1],a9[ni,n2+1],a13[ni,n2+1]],
+                [a2[ni,n2+1],a6[ni,n2+1],a10[ni,n2+1],a14[ni,n2+1]],
+                [a3[ni,n2+1],a7[ni,n2+1],a11[ni,n2+1],a15[ni,n2+1]],
+                [a4[ni,n2+1],a8[ni,n2+1],a12[ni,n2+1],a16[ni,n2+1]]])
+    D=Qobj(D)
+    a=basis(4,0)
+    b=basis(4,1)
+    c=basis(4,2)
+    d=basis(4,3)
+    
+    aa=D.dag()*E*D*a
+    bb=D.dag()*E*D*b
+    cc=D.dag()*E*D*c
+    dd=D.dag()*E*D*d
+    
+    f0=fidelity(a,aa)
+    f1=fidelity(b,bb)
+    f2=fidelity(c,cc)
+    f3=fidelity(d,dd)
+    print(f0,f1,f2,f3)
+    
+    
+    
