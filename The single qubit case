@@ -1,0 +1,88 @@
+###This is the case of the single qubit case O=pi/2*sigmax
+import numpy as np
+from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister
+from qiskit import BasicAer, execute,Aer
+from qutip import *
+from qiskit import IBMQ
+IBMQ.load_account() 
+IBMQ.providers()    
+
+
+
+N=1000
+NI=40
+r=0.9
+P=1/r
+w=1
+
+
+W=np.zeros([N+1,NI])
+F=np.zeros([NI,1])
+P0=np.zeros([NI,1])
+ti=np.zeros([NI,1])
+
+for ii in range(NI):
+       
+    theta=0    
+    lam=0
+    phi=0
+    w=1
+    
+    for i in range(N):
+        qr=QuantumRegister(1)
+        cr=ClassicalRegister(1)
+        qc=QuantumCircuit(qr,cr)    
+        qc.u3(theta,phi,lam,qr[0])            
+        qc.u3(np.pi,0,0,qr[0])   
+        qc.u3(theta,-lam+np.pi,-phi+np.pi,qr[0])  
+        qc.measure(qr[0],cr[0])
+        provider = IBMQ.get_provider(hub='ibm-q')
+        backend = provider.get_backend('ibmq_5_yorktown')
+        job=execute(qc,backend,shots=1)
+        result = job.result()
+        counts=result.get_counts()
+        if counts=={'0':1}:
+            m=0
+            w=r*w
+            
+        else:
+            m=1
+            w=P*w
+                
+            theta=2*np.pi*w*(np.random.random()-0.5)+theta
+            lam=2*np.pi*w*(np.random.random()-0.5)+lam
+            phi=2*np.pi*w*(np.random.random()-0.5)+phi
+                
+   
+        if w>1:
+            w=1     
+                
+        if w<0.1:
+            break
+        
+        ti[ii,0]=i
+        print(ii,i,w)          
+
+            
+    qr=QuantumRegister(1)
+    cr=ClassicalRegister(1)
+    qc=QuantumCircuit(qr,cr)    
+        
+        
+    qc.u3(theta,phi,lam,qr[0])            
+       
+    qc.u3(np.pi,0,0,qr[0])
+        
+    qc.u3(theta,-lam+np.pi,-phi+np.pi,qr[0])
+       
+    qc.measure(qr[0],cr[0])
+    provider = IBMQ.get_provider(hub='ibm-q')
+    backend = provider.get_backend('ibmq_5_yorktown')
+    job=execute(qc,backend)
+    result=job.result()
+    counts=result.get_counts()
+    print(counts)       
+
+    P0[ii,0]=counts['0']/1024
+    F[ii,0]=0.5*(1+np.sqrt(P0[ii,0]))
+            
