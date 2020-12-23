@@ -71,7 +71,7 @@ for ii in range(NI):
         
     qc.u3(theta,phi,lam,qr[0])            
        
-    qc.u3(np.pi,0,0,qr[0])
+    qc.u3(np.pi,1.5*np.pi,0.5*np.pi,qr[0])
         
     qc.u3(theta,-lam+np.pi,-phi+np.pi,qr[0])
        
