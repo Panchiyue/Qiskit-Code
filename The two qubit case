@@ -3,9 +3,7 @@ import numpy as np
 from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister
 from qiskit import BasicAer, execute,Aer
 from qutip import *
-from qiskit import IBMQ
-IBMQ.load_account() 
-IBMQ.providers()    
+
 from qiskit.quantum_info.operators import Operator
 
 
@@ -21,7 +19,7 @@ r=0.9
 p=1/r    
 
 N=100000               
-NI=1       
+NI=1
 
 P0=np.zeros([NI,1])
 P1=np.zeros([NI,1])
@@ -54,6 +52,9 @@ f0=np.zeros([NI,1])
 f1=np.zeros([NI,1])
 f2=np.zeros([NI,1])
 f3=np.zeros([NI,1])
+
+c_00=np.zeros([NI,2]) 
+c_01=np.zeros([NI,1])
 
 
 for ni in range(NI):
@@ -108,8 +109,7 @@ for ni in range(NI):
         
         
         qc.measure([0,1],[0,1])
-        provider = IBMQ.get_provider(hub='ibm-q')
-        backend = provider.get_backend('ibmq_ourense')
+        backend = Aer.get_backend('qasm_simulator')
         job=execute(qc,backend,shots=1)
         result = job.result()
         counts=result.get_counts()
@@ -233,8 +233,7 @@ for ni in range(NI):
         
         
         qc.measure([0,1],[0,1])
-        provider = IBMQ.get_provider(hub='ibm-q')
-        backend = provider.get_backend('ibmq_ourense')
+        backend = Aer.get_backend('qasm_simulator')
         job=execute(qc,backend,shots=1)
         result = job.result()
         counts=result.get_counts()
@@ -267,6 +266,8 @@ for ni in range(NI):
             a14[ni,n1+1]=a14[ni,n1]
             a15[ni,n1+1]=a15[ni,n1]
             a16[ni,n1+1]=a16[ni,n1]
+            
+            c_00[ni,0]=c_00[ni,0]+1
         if counts=={'10':1}:
             m=2
             w1=w1*p
@@ -358,8 +359,7 @@ for ni in range(NI):
         
         
         qc.measure([0,1],[0,1])
-        provider = IBMQ.get_provider(hub='ibm-q')
-        backend = provider.get_backend('ibmq_ourense')
+        backend = Aer.get_backend('qasm_simulator')
         job=execute(qc,backend,shots=1)
         result = job.result()
         counts=result.get_counts()
@@ -392,6 +392,8 @@ for ni in range(NI):
             a14[ni,n2+1]=a14[ni,n2]
             a15[ni,n2+1]=a15[ni,n2]
             a16[ni,n2+1]=a16[ni,n2]
+            
+            c_00[ni,1]=c_00[ni,1]+1
         if counts=={'10':1}:
             m=2
             w2=w2*r
@@ -430,6 +432,8 @@ for ni in range(NI):
             a14[ni,n2+1]=a14[ni,n2]
             a15[ni,n2+1]=a15[ni,n2]
             a16[ni,n2+1]=a16[ni,n2]
+            
+            c_01[ni,0]=c_01[ni,0]+1                                                                                                                          
         if counts=={'11':1}:
             m=3
             w2=w2*p
@@ -483,11 +487,11 @@ for ni in range(NI):
     cc=D.dag()*E*D*c
     dd=D.dag()*E*D*d
     
-    f0=fidelity(a,aa)
-    f1=fidelity(b,bb)
-    f2=fidelity(c,cc)
-    f3=fidelity(d,dd)
-    print(f0,f1,f2,f3)
+    f0[ni,0]=fidelity(a,aa)
+    f1[ni,0]=fidelity(b,bb)
+    f2[ni,0]=fidelity(c,cc)
+    f3[ni,0]=fidelity(d,dd)
     
+    print(f0[ni,0],f1[ni,0],f2[ni,0],f3[ni,0])
     
     
